@@ -1,0 +1,7 @@
+cd путь_к_папке_uk-news-bot
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin https://github.com/8allenY/uk-news-bot.git
+git push -u origin main
