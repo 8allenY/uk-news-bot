@@ -16,7 +16,7 @@ bot = Bot(token=TOKEN)
 
 # Функция для получения новостей
 def get_latest_news():
-    url = "https://newsapi.org/v2/top-headlines"
+    url = "https://newsapi.org/v2/everything"
     params = {
         "country": "gb",   # UK
         "pageSize": 10,
@@ -58,3 +58,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
