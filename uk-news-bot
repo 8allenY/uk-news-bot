@@ -1,4 +1,4 @@
-cd путь_к_папке_uk-news-bot
+cd C:\Users\panan\OneDrive\Рабочий стол\uk-news-bot
 git init
 git add .
 git commit -m "Initial commit"
