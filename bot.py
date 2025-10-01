@@ -18,8 +18,10 @@ bot = Bot(token=TOKEN)
 def get_latest_news():
     url = "https://newsapi.org/v2/everything"
     params = {
-        "country": "gb",   # UK
-        "pageSize": 10,
+        "q": "UK",               # ключевое слово для поиска
+        "pageSize": 10,          # количество новостей
+        "sortBy": "publishedAt", # сортировка по времени публикации
+        "language": "en",
         "apiKey": os.getenv("NEWS_API_KEY", "YOUR_NEWS_API_KEY")
     }
     try:
@@ -58,4 +60,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
