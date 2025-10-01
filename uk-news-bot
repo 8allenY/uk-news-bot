@@ -4,4 +4,6 @@ git add .
 git commit -m "Initial commit"
 git branch -M main
 git remote add origin https://github.com/8allenY/uk-news-bot.git
+git add requirements.txt
+git commit -m "Add aiogram to requirements"
 git push -u origin main
