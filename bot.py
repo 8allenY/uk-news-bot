@@ -1,64 +1,49 @@
 import os
 import requests
-import time
-from telegram import Bot
+import asyncio
+from aiogram import Bot
 
-# Токен бота (из BotFather)
-TOKEN = os.getenv("TELEGRAM_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN")
+# Load environment variables
+NEWS_API_KEY = os.getenv("NEWS_API_KEY", "YOUR_NEWS_API_KEY")
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "YOUR_TELEGRAM_TOKEN")
+CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL", "@your_channel_name")
 
-# ID или @username канала
-CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL", "@UKToday_News")
+bot = Bot(token=TELEGRAM_TOKEN)
 
-# Интервал (для теста сделаем 60 секунд)
-POST_INTERVAL = 60
-
-bot = Bot(token=TOKEN)
-
-# Функция для получения новостей
-def get_latest_news():
+def get_news():
     url = "https://newsapi.org/v2/everything"
     params = {
-        "q": "UK",               # ключевое слово для поиска
-        "pageSize": 10,          # количество новостей
-        "sortBy": "publishedAt", # сортировка по времени публикации
+        "q": "UK",
+        "pageSize": 10,
+        "sortBy": "publishedAt",
         "language": "en",
-        "apiKey": os.getenv("NEWS_API_KEY", "YOUR_NEWS_API_KEY")
+        "apiKey": NEWS_API_KEY
     }
-    try:
-        response = requests.get(url, params=params)
-        data = response.json()
-        return data.get("articles", [])
-    except Exception as e:
-        print("Ошибка получения новостей:", e)
+
+    response = requests.get(url, params=params)
+    data = response.json()
+
+    if data.get("status") == "ok":
+        articles = data.get("articles", [])
+        print(f"Found {len(articles)} articles.")
+        return articles
+    else:
+        print("Error fetching news:", data)
         return []
 
-# Функция публикации новости
-def post_news(article):
-    title = article.get("title", "No title")
-    url = article.get("url", "")
-    message = f"📰 {title}\n\nRead more: {url}"
-    try:
-        bot.send_message(chat_id=CHANNEL_ID, text=message)
-        print("Опубликовано:", title)
-    except Exception as e:
-        print("Ошибка публикации:", e)
+async def publish_news():
+    articles = get_news()
+    if not articles:
+        print("No news available for publishing.")
+        return
 
-def main():
-    # сразу публикуем первую новость
-    articles = get_latest_news()
-    if articles:
-        post_news(articles[0])
-    else:
-        print("Нет новостей для публикации")
+    for index, article in enumerate(articles):
+        message = article.get("title", "No title available")
+        await bot.send_message(chat_id=CHANNEL_ID, text=message)
+        print(f"Published ({index + 1}/10):", message)
 
-    # потом обычный цикл (каждую минуту)
-    while True:
-        time.sleep(POST_INTERVAL)
-        articles = get_latest_news()
-        if articles:
-            post_news(articles[0])
+        if index < len(articles) - 1:
+            await asyncio.sleep(3600)  # Wait 1 hour before posting the next article
 
 if __name__ == "__main__":
-    main()
-
-
+    asyncio.run(publish_news())
