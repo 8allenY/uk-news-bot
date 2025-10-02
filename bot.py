@@ -2,11 +2,14 @@ import os
 import requests
 import asyncio
 from aiogram import Bot
+from datetime import datetime
 
 # Load environment variables
 NEWS_API_KEY = os.getenv("NEWS_API_KEY", "YOUR_NEWS_API_KEY")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "YOUR_TELEGRAM_TOKEN")
 CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL", "@your_channel_name")
+
+today = datetime.now().strftime("%Y-%m-%d")
 
 bot = Bot(token=TELEGRAM_TOKEN)
 
@@ -29,7 +32,8 @@ def fetch_news(endpoint, params):
 
 def format_message(article, label):
     title = article.get("title", "No title")
-    description = article.get("description", "No description available")
+    raw_content = article.get("content", "")
+    description = raw_content.split("[")[0].strip() if raw_content else "No description available"
     url = article.get("url", "")
     return (
         f"{label} *{title}*\n\n"
@@ -65,6 +69,8 @@ async def hourly_news_loop():
             "pageSize": 10,
             "sortBy": "publishedAt",
             "language": "en",
+            "from": today,
+            "to": today,
             "apiKey": NEWS_API_KEY
         }
         articles = fetch_news("https://newsapi.org/v2/everything", params)
@@ -82,8 +88,10 @@ async def headline_news_loop():
     while True:
         params = {
             "country": "gb",
-            "pageSize": 5,
+            "pageSize": 10,
             "language": "en",
+            "from": today,
+            "to": today,
             "apiKey": NEWS_API_KEY
         }
         articles = fetch_news("https://newsapi.org/v2/top-headlines", params)
@@ -104,4 +112,5 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
