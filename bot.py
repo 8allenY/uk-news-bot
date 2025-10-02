@@ -1,7 +1,9 @@
 import os
+import re
 import requests
 import asyncio
 from datetime import datetime
+from collections import deque
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 
@@ -19,6 +21,11 @@ published_count = 0
 last_post_time = None
 last_title = None
 is_paused = False
+
+# Flood protection
+recent_posts = deque()
+MAX_POSTS = 2
+INTERVAL_SECONDS = 600  # 10 минут
 
 def fetch_news():
     params = {
@@ -45,11 +52,19 @@ def format_message(article):
     raw_content = article.get("content", "")
     description = article.get("description", "")
 
-    if raw_content and "[+" not in raw_content:
-        final_text = raw_content.strip()
-    elif description:
-        final_text = description.strip()
-    else:
+    # Выбираем источник текста
+    text_source = raw_content if raw_content else description
+
+    # Убираем обрезку вида "[+123 chars]"
+    text_source = re.sub(r"\[\+\d+ chars\]", "", text_source).strip()
+
+    # Разбиваем на предложения
+    sentences = re.split(r'(?<=[.!?]) +', text_source)
+
+    # Берём первые 5 предложений
+    final_text = " ".join(sentences[:5]).strip()
+
+    if not final_text:
         final_text = "No description available"
 
     url = article.get("url", "")
@@ -83,6 +98,10 @@ async def send_article(article):
         published_count += 1
         last_post_time = datetime.now().strftime("%H:%M")
         last_title = article.get("title")
+
+        # Записываем время публикации для flood protection
+        recent_posts.append(datetime.now().timestamp())
+
     except Exception as e:
         print("Failed to send article:", e)
         await bot.send_message(chat_id=OWNER_ID, text=f"⚠️ Ошибка отправки статьи: {e}")
@@ -102,9 +121,17 @@ async def news_loop():
             await bot.send_message(chat_id=OWNER_ID, text="⚠️ NewsAPI не вернул статьи")
 
         for article in articles:
-            print("📰 Заголовок:", article.get("title"))
             url = article.get("url")
             if url and url not in posted_articles:
+                # Flood protection
+                now = datetime.now().timestamp()
+                while recent_posts and now - recent_posts[0] > INTERVAL_SECONDS:
+                    recent_posts.popleft()
+
+                if len(recent_posts) >= MAX_POSTS:
+                    print("🚫 Лимит публикаций за 10 минут достигнут.")
+                    continue
+
                 await send_article(article)
 
         await asyncio.sleep(300)
