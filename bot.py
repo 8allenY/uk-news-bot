@@ -9,7 +9,7 @@ from aiogram.filters import Command
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL")
-OWNER_USERNAME = "@allicksis"
+OWNER_ID = 123456789  # ← Вставь сюда свой реальный chat_id
 
 bot = Bot(token=TELEGRAM_TOKEN)
 dp = Dispatcher()
@@ -19,10 +19,6 @@ published_count = 0
 last_post_time = None
 last_title = None
 is_paused = False
-
-@dp.message()
-async def debug_chat_id(message: types.Message):
-    print("👤 Chat ID:", message.chat.id)
 
 def fetch_news():
     params = {
@@ -89,7 +85,7 @@ async def send_article(article):
         last_title = article.get("title")
     except Exception as e:
         print("Failed to send article:", e)
-        await bot.send_message(chat_id=OWNER_USERNAME, text=f"⚠️ Ошибка отправки статьи: {e}")
+        await bot.send_message(chat_id=OWNER_ID, text=f"⚠️ Ошибка отправки статьи: {e}")
 
 async def news_loop():
     while True:
@@ -103,7 +99,7 @@ async def news_loop():
         print(f"🔎 Found {len(articles)} articles")
 
         if not articles:
-            await bot.send_message(chat_id=OWNER_USERNAME, text="⚠️ NewsAPI не вернул статьи")
+            await bot.send_message(chat_id=OWNER_ID, text="⚠️ NewsAPI не вернул статьи")
 
         for article in articles:
             print("📰 Заголовок:", article.get("title"))
@@ -122,7 +118,7 @@ async def status_report_loop():
             f"✅ Bot is running normally"
         )
         try:
-            await bot.send_message(chat_id=OWNER_USERNAME, text=status)
+            await bot.send_message(chat_id=OWNER_ID, text=status)
         except Exception as e:
             print("Failed to send status:", e)
         await asyncio.sleep(21600)  # каждые 6 часов
@@ -130,7 +126,7 @@ async def status_report_loop():
 # Команды в личке
 @dp.message(Command(commands=["status"]))
 async def status_handler(message: types.Message):
-    if message.chat.type == "private" and message.from_user.username == "allicksis":
+    if message.chat.type == "private" and message.from_user.id == OWNER_ID:
         status = (
             f"📊 Bot Status:\n"
             f"📰 Published: {published_count} articles\n"
@@ -139,38 +135,38 @@ async def status_handler(message: types.Message):
         )
         await message.answer(status)
     else:
-        await message.answer("⛔ Команда доступна только @allicksis в личке.")
+        await message.answer("⛔ Команда доступна только владельцу в личке.")
 
 @dp.message(Command(commands=["pause"]))
 async def pause_handler(message: types.Message):
     global is_paused
-    if message.chat.type == "private" and message.from_user.username == "allicksis":
+    if message.chat.type == "private" and message.from_user.id == OWNER_ID:
         is_paused = True
         await message.answer("⏸️ Публикация временно приостановлена.")
     else:
-        await message.answer("⛔ Команда доступна только @allicksis в личке.")
+        await message.answer("⛔ Команда доступна только владельцу в личке.")
 
 @dp.message(Command(commands=["resume"]))
 async def resume_handler(message: types.Message):
     global is_paused
-    if message.chat.type == "private" and message.from_user.username == "allicksis":
+    if message.chat.type == "private" and message.from_user.id == OWNER_ID:
         is_paused = False
         await message.answer("▶️ Публикация возобновлена.")
     else:
-        await message.answer("⛔ Команда доступна только @allicksis в личке.")
+        await message.answer("⛔ Команда доступна только владельцу в личке.")
 
 @dp.message(Command(commands=["last"]))
 async def last_handler(message: types.Message):
-    if message.chat.type == "private" and message.from_user.username == "allicksis":
+    if message.chat.type == "private" and message.from_user.id == OWNER_ID:
         if last_title and last_post_time:
             await message.answer(f"🕓 Last post at {last_post_time}:\n📰 {last_title}")
         else:
             await message.answer("ℹ️ Ещё не было публикаций.")
     else:
-        await message.answer("⛔ Команда доступна только @allicksis в личке.")
+        await message.answer("⛔ Команда доступна только владельцу в личке.")
 
 async def startup():
-    await bot.send_message(chat_id=OWNER_USERNAME, text="✅ Bot is alive and scanning UK headlines...")
+    await bot.send_message(chat_id=OWNER_ID, text="✅ Bot is alive and scanning UK headlines...")
     try:
         await asyncio.gather(
             dp.start_polling(bot),
@@ -182,4 +178,3 @@ async def startup():
 
 if __name__ == "__main__":
     asyncio.run(startup())
-
