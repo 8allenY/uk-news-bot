@@ -20,6 +20,10 @@ last_post_time = None
 last_title = None
 is_paused = False
 
+@dp.message()
+async def debug_chat_id(message: types.Message):
+    print("👤 Chat ID:", message.chat.id)
+
 def fetch_news():
     params = {
         "q": "UK business OR UK politics OR UK society",
@@ -178,3 +182,4 @@ async def startup():
 
 if __name__ == "__main__":
     asyncio.run(startup())
+
