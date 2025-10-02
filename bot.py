@@ -1,7 +1,6 @@
 import os
 import requests
 import asyncio
-from datetime import datetime
 from aiogram import Bot
 
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
@@ -59,15 +58,12 @@ async def send_article(article, label):
         print("Failed to send article:", e)
 
 async def post_one_hourly_article():
-    print("🔍 Ищу свежую статью для моментальной публикации...")
-    today = datetime.now().strftime("%Y-%m-%d")
+    print("🔍 Ищу статью для моментальной публикации...")
     params = {
         "q": "UK",
-        "pageSize": 10,
+        "pageSize": 20,
         "sortBy": "publishedAt",
         "language": "en",
-        "from": today,
-        "to": today,
         "apiKey": NEWS_API_KEY
     }
 
@@ -75,6 +71,7 @@ async def post_one_hourly_article():
     print(f"🔎 Найдено статей: {len(articles)}")
 
     for article in articles:
+        print("📰 Заголовок:", article.get("title"))
         url = article.get("url")
         if url and url not in posted_hourly:
             await send_article(article, "🕐 Hourly UK News:")
@@ -92,18 +89,16 @@ async def hourly_news_loop():
 
 async def headline_news_loop():
     while True:
-        today = datetime.now().strftime("%Y-%m-%d")
         params = {
             "country": "gb",
-            "pageSize": 5,
-            "from": today,
-            "to": today,
+            "pageSize": 10,
             "apiKey": NEWS_API_KEY
         }
         articles = fetch_news("https://newsapi.org/v2/top-headlines", params)
         print(f"⚡ Заголовков найдено: {len(articles)}")
 
         for article in articles:
+            print("📰 Заголовок:", article.get("title"))
             url = article.get("url")
             if url and url not in posted_headlines:
                 await send_article(article, "⚡ UK Headline:")
