@@ -10,40 +10,96 @@ CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL", "@your_channel_name")
 
 bot = Bot(token=TELEGRAM_TOKEN)
 
-def get_news():
-    url = "https://newsapi.org/v2/everything"
-    params = {
-        "q": "UK",
-        "pageSize": 10,
-        "sortBy": "publishedAt",
-        "language": "en",
-        "apiKey": NEWS_API_KEY
-    }
+# Sets to track posted articles
+posted_hourly = set()
+posted_headlines = set()
 
-    response = requests.get(url, params=params)
-    data = response.json()
-
-    if data.get("status") == "ok":
-        articles = data.get("articles", [])
-        print(f"Found {len(articles)} articles.")
-        return articles
-    else:
-        print("Error fetching news:", data)
+def fetch_news(endpoint, params):
+    try:
+        response = requests.get(endpoint, params=params)
+        data = response.json()
+        if data.get("status") == "ok":
+            return data.get("articles", [])
+        else:
+            print("API error:", data)
+            return []
+    except Exception as e:
+        print("Request failed:", e)
         return []
 
-async def publish_news():
-    articles = get_news()
-    if not articles:
-        print("No news available for publishing.")
-        return
+def format_message(article, label):
+    title = article.get("title", "No title")
+    description = article.get("description", "No description available")
+    url = article.get("url", "")
+    return (
+        f"{label} *{title}*\n\n"
+        f"📝 {description}\n\n"
+        f"🔗 [Read more]({url})"
+    )
 
-    for index, article in enumerate(articles):
-        message = article.get("title", "No title available")
-        await bot.send_message(chat_id=CHANNEL_ID, text=message)
-        print(f"Published ({index + 1}/10):", message)
+async def send_article(article, label):
+    message = format_message(article, label)
+    image_url = article.get("urlToImage")
 
-        if index < len(articles) - 1:
-            await asyncio.sleep(3600)  # Wait 1 hour before posting the next article
+    try:
+        if image_url:
+            await bot.send_photo(
+                chat_id=CHANNEL_ID,
+                photo=image_url,
+                caption=message,
+                parse_mode="Markdown"
+            )
+        else:
+            await bot.send_message(
+                chat_id=CHANNEL_ID,
+                text=message,
+                parse_mode="Markdown"
+            )
+    except Exception as e:
+        print("Failed to send article:", e)
+
+async def hourly_news_loop():
+    while True:
+        params = {
+            "q": "UK",
+            "pageSize": 10,
+            "sortBy": "publishedAt",
+            "language": "en",
+            "apiKey": NEWS_API_KEY
+        }
+        articles = fetch_news("https://newsapi.org/v2/everything", params)
+
+        for article in articles:
+            url = article.get("url")
+            if url and url not in posted_hourly:
+                await send_article(article, "🕐 Hourly UK News:")
+                posted_hourly.add(url)
+                break  # Only post one per hour
+
+        await asyncio.sleep(3600)  # Wait 1 hour
+
+async def headline_news_loop():
+    while True:
+        params = {
+            "country": "gb",
+            "pageSize": 5,
+            "apiKey": NEWS_API_KEY
+        }
+        articles = fetch_news("https://newsapi.org/v2/top-headlines", params)
+
+        for article in articles:
+            url = article.get("url")
+            if url and url not in posted_headlines:
+                await send_article(article, "⚡ UK Headline:")
+                posted_headlines.add(url)
+
+        await asyncio.sleep(300)  # Check every 5 minutes
+
+async def main():
+    await asyncio.gather(
+        hourly_news_loop(),
+        headline_news_loop()
+    )
 
 if __name__ == "__main__":
-    asyncio.run(publish_news())
+    asyncio.run(main())
