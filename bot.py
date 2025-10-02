@@ -33,7 +33,7 @@ def format_message(article, label):
     url = article.get("url", "")
     return (
         f"{label} *{title}*\n\n"
-        f"📝 {description}\n\n"
+        f"{description}\n\n"
         f"🔗 [Read more]({url})"
     )
 
@@ -72,7 +72,7 @@ async def hourly_news_loop():
         for article in articles:
             url = article.get("url")
             if url and url not in posted_hourly:
-                await send_article(article, "🕐 Hourly UK News:")
+                await send_article(article, "🕐 ")
                 posted_hourly.add(url)
                 break  # Only post one per hour
 
@@ -83,6 +83,7 @@ async def headline_news_loop():
         params = {
             "country": "gb",
             "pageSize": 5,
+            "language": "en",
             "apiKey": NEWS_API_KEY
         }
         articles = fetch_news("https://newsapi.org/v2/top-headlines", params)
@@ -90,7 +91,7 @@ async def headline_news_loop():
         for article in articles:
             url = article.get("url")
             if url and url not in posted_headlines:
-                await send_article(article, "⚡ UK Headline:")
+                await send_article(article, "⚡ ")
                 posted_headlines.add(url)
 
         await asyncio.sleep(300)  # Check every 5 minutes
@@ -103,3 +104,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
