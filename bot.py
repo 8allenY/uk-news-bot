@@ -119,9 +119,10 @@ def format_message(article, tag="[UK]"):
     final_text = " ".join(sentences[:5]).strip() or "No description available"
     url = article.get("url", "")
     return (
-        f"*{tag} {title}*\n\n"
-        f"📝 {final_text}\n\n"
+        f"⚡️ *{tag} {title}*\n\n"
+        f"{final_text}\n\n"
         f"🔗 [Read more]({url})"
+        f"👉 [UKToday. Subscribe]({"t.me/UKToday_News"})"
     )
 
 async def send_article(article, tag="[UK]"):
@@ -143,7 +144,7 @@ async def send_article(article, tag="[UK]"):
 async def news_loop():
     while True:
         if is_paused:
-            print("⏸️ Публикация приостановлена.")
+            print("⏸️ Puplishing stopped.")
             await asyncio.sleep(300)
             continue
 
@@ -210,25 +211,25 @@ async def status_handler(message: types.Message):
         )
         await message.answer(status)
     else:
-        await message.answer("⛔ Команда доступна только владельцу в личке.")
+        await message.answer("⛔ For host only!")
 
 @dp.message(Command(commands=["pause"]))
 async def pause_handler(message: types.Message):
     global is_paused
     if message.chat.type == "private" and message.from_user.id == OWNER_ID:
         is_paused = True
-        await message.answer("⏸️ Публикация временно приостановлена.")
+        await message.answer("⏸️ Posting stopped")
     else:
-        await message.answer("⛔ Команда доступна только владельцу в личке.")
+        await message.answer("⛔ For host only!")
 
 @dp.message(Command(commands=["resume"]))
 async def resume_handler(message: types.Message):
     global is_paused
     if message.chat.type == "private" and message.from_user.id == OWNER_ID:
         is_paused = False
-        await message.answer("▶️ Публикация возобновлена.")
+        await message.answer("▶️ Posting resumed")
     else:
-        await message.answer("⛔ Команда доступна только владельцу в личке.")
+        await message.answer("⛔ For host only!")
 
 @dp.message(Command(commands=["last"]))
 async def last_handler(message: types.Message):
@@ -236,9 +237,9 @@ async def last_handler(message: types.Message):
         if last_title and last_post_time:
             await message.answer(f"🕓 Last post at {last_post_time}:\n📰 {last_title}")
         else:
-            await message.answer("ℹ️ Ещё не было публикаций.")
+            await message.answer("ℹ️ No posts yet.")
     else:
-        await message.answer("⛔ Команда доступна только владельцу в личке.")
+        await message.answer("⛔ For host only!")
 
 @dp.message(Command(commands=["set_limit"]))
 async def set_limit_handler(message: types.Message):
@@ -246,23 +247,23 @@ async def set_limit_handler(message: types.Message):
     if message.chat.type == "private" and message.from_user.id == OWNER_ID:
         parts = message.text.strip().split()
         if len(parts) != 3:
-            await message.answer("ℹ️ Использование: /set_limit <capacity> <interval_seconds>\nПример: /set_limit 2 600")
+            await message.answer("ℹ️ Usage: /set_limit <capacity> <interval_seconds>\nExample: /set_limit 2 600")
             return
         try:
             new_capacity = int(parts[1])
             new_interval = int(parts[2])
             if new_capacity <= 0 or new_interval <= 0:
-                await message.answer("⚠️ Значения должны быть положительными целыми числами.")
+                await message.answer("⚠️ Values ​​must be positive integers.")
                 return
             bucket_capacity = new_capacity
             bucket_interval = new_interval
             bucket_tokens = float(bucket_capacity)  # сбросить бак на полный
             bucket_last_refill = time.time()
-            await message.answer(f"✅ Лимит обновлён: {bucket_capacity} пост(а) за {bucket_interval} сек.")
+            await message.answer(f"✅ Limit updated: {bucket_capacity} post(s) for {bucket_interval} sec.")
         except ValueError:
-            await message.answer("⚠️ Введите целые числа. Пример: /set_limit 2 600")
+            await message.answer("⚠️ Use integers. Expample: /set_limit 2 600")
     else:
-        await message.answer("⛔ Команда доступна только владельцу в личке.")
+        await message.answer("⛔ For host only!")
 
 async def startup():
     await bot.send_message(chat_id=OWNER_ID, text="✅ Bot is alive and scanning UK & World Politics headlines...")
@@ -277,3 +278,4 @@ async def startup():
 
 if __name__ == "__main__":
     asyncio.run(startup())
+
