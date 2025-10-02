@@ -120,8 +120,8 @@ def format_message(article, tag="[UK]"):
     url = article.get("url", "")
     return (
         f"⚡️ *{tag} {title}*\n\n"
-        f"{final_text}\n\n"
-        f"🔗 [Read more]({url})"
+        f"{final_text}"
+        f"🔗 [Read more]({url})\n\n"
         f"👉 [UKToday. Subscribe]({"t.me/UKToday_News"})"
     )
 
@@ -278,4 +278,5 @@ async def startup():
 
 if __name__ == "__main__":
     asyncio.run(startup())
+
 
