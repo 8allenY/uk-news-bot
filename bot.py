@@ -24,12 +24,12 @@ is_paused = False
 
 # Flood protection
 recent_posts = deque()
-MAX_POSTS = 2
-INTERVAL_SECONDS = 600  # 10 минут
+MAX_POSTS = 1
+INTERVAL_SECONDS = 300  # 10 минут
 
 def fetch_news():
     params = {
-        "q": "UK business OR UK politics OR UK society",
+        "q": "UK business OR UK politics OR UK society OR US politics OR EU politics OR ASIA politics",
         "pageSize": 20,
         "sortBy": "publishedAt",
         "language": "en",
@@ -69,8 +69,8 @@ def format_message(article):
 
     url = article.get("url", "")
     return (
-        f"*{title}*\n\n"
-        f"📝 {final_text}\n\n"
+        f"⚡️*{title}*\n\n"
+        f"{final_text}\n\n"
         f"🔗 [Read more]({url})"
     )
 
@@ -205,3 +205,4 @@ async def startup():
 
 if __name__ == "__main__":
     asyncio.run(startup())
+
