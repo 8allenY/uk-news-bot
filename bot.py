@@ -34,8 +34,8 @@ pending_queue = deque(maxlen=5)
 TOP_SOURCES = "bbc-news,the-guardian-uk,independent,reuters,bloomberg,financial-times,cnn,associated-press,politico,al-jazeera-english"
 
 # Token bucket (лимит публикаций)
-bucket_capacity = 2
-bucket_interval = 600
+bucket_capacity = 1
+bucket_interval = 900
 bucket_tokens = bucket_capacity
 bucket_last_refill = time.time()
 
@@ -145,7 +145,7 @@ async def news_loop():
     while True:
         if is_paused:
             print("⏸️ Puplishing stopped.")
-            await asyncio.sleep(300)
+            await asyncio.sleep(900)
             continue
 
         print("🔍 Checking for fresh UK and World Politics news...")
@@ -177,7 +177,7 @@ async def news_loop():
                 await send_article(article, tag=tag)
                 posted_keys.add(key)
 
-        await asyncio.sleep(300)
+        await asyncio.sleep(900)
 
 async def status_report_loop():
     while True:
@@ -278,5 +278,6 @@ async def startup():
 
 if __name__ == "__main__":
     asyncio.run(startup())
+
 
 
