@@ -32,7 +32,7 @@ Built to automate information flow and enhance decision-making efficiency.
 
 ## ⚙️ Setup Instructions
 1. Clone this repository:
-  git clone https://github.com/YOUR_USERNAME/telegram-news-bot.git
+  git clone https://github.com/8allenY/telegram-news-bot.git
   cd telegram-news-bot
 
 2. Install dependencies:
