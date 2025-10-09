@@ -2,6 +2,7 @@
 
 A Python-based Telegram bot that delivers curated business and technology news directly to your chat.  
 Built to automate information flow and enhance decision-making efficiency.
+(This is a real bot and a real project. It is now working here: t.me/UKToday_News)
 
 ---
 
