@@ -31,9 +31,7 @@ Built to automate information flow and enhance decision-making efficiency.
 ---
 
 ## ⚙️ Setup Instructions
-1. Clone this repository:
-  git clone https://github.com/8allenY/telegram-news-bot.git
-  cd telegram-news-bot
+1. Clone this repository
 
 2. Install dependencies:
 pip install -r requirements.txt
